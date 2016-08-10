@@ -3,3 +3,5 @@ dumps
 venv
 libencrypt.so
 encrypt.dll
+/.project
+/.pydevproject
