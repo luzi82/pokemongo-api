@@ -23,6 +23,7 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 Author: tjado <https://github.com/tejado>
 """
 
+import sys,json
 import struct
 import time
 import xxhash
@@ -138,6 +139,7 @@ def hashSignature(signature, libraryPath):
     # Hash sig
     library.encrypt(serialized, size, iv, 32, None, ctypes.byref(outputSize))
     output = (ctypes.c_ubyte * outputSize.value)()
+
     # Call lib
     library.encrypt(
         serialized,
@@ -148,4 +150,5 @@ def hashSignature(signature, libraryPath):
         ctypes.byref(outputSize)
     )
 
-    return b''.join(map(chr, output))
+#     return b''.join(map(chr, output))
+    return bytes(output)
