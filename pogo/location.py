@@ -38,7 +38,16 @@ class Location(object):
         return gpxpy.geo.haversine_distance(*coords)
 
     @staticmethod
-    def Noop():
+    def getLatLongIndex(latitude, longitude):
+        return CellId.from_lat_lng(
+            LatLng.from_degrees(
+                latitude,
+                longitude
+            )
+        ).id()
+
+    @staticmethod
+    def noop():
         return Location(None, None, noop=True)
 
     def setLocation(self, search):
@@ -46,7 +55,9 @@ class Location(object):
             geo = self.locator.geocode(search)
         except:
             raise GeneralPogoException('Error in Geo Request')
-        return geo.latitude, geo.longitude, geo.altitude or 8 # not as suspicious as 0
+
+        # 8 is arbitrary, but not as suspicious as 0
+        return geo.latitude, geo.longitude, geo.altitude or 8
 
     def setCoordinates(self, latitude, longitude):
         self.latitude = latitude
@@ -55,7 +66,7 @@ class Location(object):
     def getCoordinates(self):
         return self.latitude, self.longitude, self.altitude
 
-    def getCells(self, radius=10):
+    def getCells(self, radius=10, bothDirections=True):
         origin = CellId.from_lat_lng(
             LatLng.from_degrees(
                 self.latitude,
@@ -68,12 +79,17 @@ class Location(object):
         right = origin.next()
         left = origin.prev()
 
+        # Double the radius if we're only walking one way
+        if not bothDirections:
+            radius *= 2
+
         # Search around provided radius
         for _ in range(radius):
             walk.append(right.id())
-            walk.append(left.id())
             right = right.next()
-            left = left.prev()
+            if bothDirections:
+                walk.append(left.id())
+                left = left.prev()
 
         # Return everything
         return sorted(walk)

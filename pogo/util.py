@@ -27,9 +27,37 @@ import struct
 import time
 import xxhash
 import ctypes
+import inspect
 import os
+import logging
 
 from binascii import unhexlify
+
+
+class ConstReflect(dict):
+
+    def __init__(self):
+        super(dict, self).__init__(self)
+
+        def determineRoutine(attribute):
+            return not(inspect.isroutine(attribute))
+
+        attributes = inspect.getmembers(type(self), determineRoutine)
+        for attribute in attributes:
+            if attribute[0].isupper():
+                self[attribute[1]] = attribute[0]
+
+
+def setupLogger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        'Line %(lineno)d,%(filename)s- %(asctime)s- %(levelname)s- %(message)s'
+    )
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
 
 def f2i(float):
@@ -59,7 +87,12 @@ def getMs():
 
 
 def hashLocation(authTicket, latitude, longitude, altitude):
-    baseHash = xxhash.xxh32(authTicket.SerializeToString(), seed=0x1B845238).intdigest()
+    baseHash = xxhash.xxh32(
+        authTicket.SerializeToString(),
+        seed=0x1B845238
+    ).intdigest()
+
+    # Format location
     locationBytes = d2h(latitude) + d2h(longitude) + d2h(altitude)
 
     # Using serialized Auth Ticket
@@ -71,8 +104,16 @@ def hashLocation(authTicket, latitude, longitude, altitude):
 
 
 def hashRequests(authTicket, payload):
-    baseHash = xxhash.xxh64(authTicket.SerializeToString(), seed=0x1B845238).intdigest()
-    return [xxhash.xxh64(request.SerializeToString(), seed=baseHash).intdigest() for request in payload]
+    baseHash = xxhash.xxh64(
+        authTicket.SerializeToString(),
+        seed=0x1B845238
+    ).intdigest()
+
+    # Serialize and hash each request
+    return [xxhash.xxh64(
+        request.SerializeToString(),
+        seed=baseHash
+    ).intdigest() for request in payload]
 
 
 # Assuming the encrypt.dll file floating around out there
@@ -97,6 +138,14 @@ def hashSignature(signature, libraryPath):
     # Hash sig
     library.encrypt(serialized, size, iv, 32, None, ctypes.byref(outputSize))
     output = (ctypes.c_ubyte * outputSize.value)()
-    library.encrypt(serialized, size, iv, 32, ctypes.byref(output), ctypes.byref(outputSize))
+    # Call lib
+    library.encrypt(
+        serialized,
+        size,
+        iv,
+        32,
+        ctypes.byref(output),
+        ctypes.byref(outputSize)
+    )
 
     return b''.join(map(chr, output))
