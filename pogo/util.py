@@ -37,7 +37,7 @@ from binascii import unhexlify
 class ConstReflect(dict):
 
     def __init__(self):
-        super(dict, self).__init__(self)
+        super(dict, self).__init__()
 
         def determineRoutine(attribute):
             return not(inspect.isroutine(attribute))
