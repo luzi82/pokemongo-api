@@ -93,3 +93,30 @@ class Location(object):
 
         # Return everything
         return sorted(walk)
+
+    def getNeighborCells(self,radius=1):
+        return get_neighbor_cell_list(self.getCellId(),radius)
+
+    def getCellId(self):
+        return CellId.from_lat_lng(
+            LatLng.from_degrees(
+                self.latitude,
+                self.longitude
+            )
+        ).parent(15)
+
+def get_neighbor_cell_list(cell_id,radius):
+    level = cell_id.level()
+    size = cell_id.get_size_ij(level)
+    face, i, j, _ = cell_id.to_face_ij_orientation()
+
+    ret=[]
+    for ii in range(-radius,radius+1):
+        for jj in range(-radius,radius+1):
+            new_i=i+(ii*size)
+            new_j=j+(jj*size)
+            same_face=(new_i>=0) and (new_i<cell_id.__class__.MAX_SIZE) and \
+                (new_j>=0) and (new_j<cell_id.__class__.MAX_SIZE)
+            ret.append(cell_id.from_face_ij_same(face,new_i,new_j,same_face).id())
+
+    return ret

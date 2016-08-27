@@ -67,9 +67,11 @@ class PogoSession(PogoSessionBare):
         return self._state.settings
 
     # Get Location
-    def getMapObjects(self, radius=10, bothDirections=True):
+    def getMapObjects(self, radius=2, bothDirections=True, cells=None):
         # Work out location details
-        cells = self.location.getCells(radius, bothDirections)
+#         cells = self.location.getCells(radius, bothDirections)
+        if cells == None:
+            cells = self.location.getNeighborCells(radius)
         latitude, longitude, _ = self.getCoordinates()
         timestamps = [0, ] * len(cells)
 
@@ -276,10 +278,14 @@ class PogoSession(PogoSessionBare):
 
     def releasePokemon(self, pokemon):
 
+        return self.releasePokemonId(pokemon.id)
+
+    def releasePokemonId(self, pokemon_id):
+
         payload = [Request.Request(
             request_type=RequestType.RELEASE_POKEMON,
             request_message=ReleasePokemonMessage.ReleasePokemonMessage(
-                pokemon_id=pokemon.id
+                pokemon_id=pokemon_id
             ).SerializeToString()
         )]
 
