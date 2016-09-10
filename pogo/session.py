@@ -143,13 +143,17 @@ class PogoSession(PogoSessionBare):
 
     # Get encounter
     def encounterPokemon(self, pokemon):
+        return self.encounterPokemon(pokemon.encounter_id,pokemon.spawn_point_id)
+
+    # Get encounter
+    def encounterPokemonById(self, encounter_id, spawn_point_id):
 
         # Create request
         payload = [Request.Request(
             request_type=RequestType.ENCOUNTER,
             request_message=EncounterMessage.EncounterMessage(
-                encounter_id=pokemon.encounter_id,
-                spawn_point_id=pokemon.spawn_point_id,
+                encounter_id=encounter_id,
+                spawn_point_id=spawn_point_id,
                 player_latitude=self.location.latitude,
                 player_longitude=self.location.longitude
             ).SerializeToString()
