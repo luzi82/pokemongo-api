@@ -22,6 +22,7 @@ from POGOProtos.Networking.Responses import (
     LevelUpRewardsResponse_pb2 as LevelUpRewardsResponse,
     UseItemXpBoostResponse_pb2 as UseItemXpBoostResponse,
     UpgradePokemonResponse_pb2 as UpgradePokemonResponse,
+    DiskEncounterResponse_pb2 as DiskEncounterResponse,
 )
 
 
@@ -51,3 +52,4 @@ class State(object):
         self.levelUp = LevelUpRewardsResponse.LevelUpRewardsResponse()
         self.xpBoost = UseItemXpBoostResponse.UseItemXpBoostResponse()
         self.upgradePokemon = UpgradePokemonResponse.UpgradePokemonResponse()
+        self.diskEncounter = DiskEncounterResponse.DiskEncounterResponse()

@@ -21,7 +21,8 @@ from POGOProtos.Networking.Requests.Messages import(
     SetFavoritePokemonMessage_pb2 as SetFavoritePokemonMessage,
     LevelUpRewardsMessage_pb2 as LevelUpRewardsMessage,
     UseItemXpBoostMessage_pb2 as UseItemXpBoostMessage,
-    UpgradePokemonMessage_pb2 as UpgradePokemonMessage
+    UpgradePokemonMessage_pb2 as UpgradePokemonMessage,
+    DiskEncounterMessage_pb2 as DiskEncounterMessage,
 )
 
 # Load Local
@@ -167,6 +168,29 @@ class PogoSession(PogoSessionBare):
 
         # Return everything
         return self._state.encounter
+
+    # Get dist encounter (fort)
+    def diskEncounterPokemonById(self, encounter_id, fort_id):
+
+        # Create request
+        payload = [Request.Request(
+            request_type=RequestType.DISK_ENCOUNTER,
+            request_message=DiskEncounterMessage.DiskEncounterMessage(
+                encounter_id=encounter_id,
+                fort_id=fort_id,
+                player_latitude=self.location.latitude,
+                player_longitude=self.location.longitude
+            ).SerializeToString()
+        )]
+
+        # Send
+        res = self.wrapAndRequest(payload)
+
+        # Parse
+        self._state.diskEncounter.ParseFromString(res.returns[0])
+
+        # Return everything
+        return self._state.diskEncounter
 
     # Upon Encounter, try and catch
     def catchPokemon(
