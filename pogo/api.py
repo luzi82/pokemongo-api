@@ -80,7 +80,7 @@ class PokeAuthSession(object):
 
     def createPogoSession(
         self, provider=None, locationLookup='',
-        session=None, noop=False
+        session=None, noop=False, coordinates=None
     ):
         if self.provider:
             self.provider = provider
@@ -91,6 +91,9 @@ class PokeAuthSession(object):
             location = Location.Noop()
         elif session:
             location = session.location
+        elif coordinates:
+            location = Location(None, self.geo_key, coordinates=coordinates)
+            logging.info(location)
         elif locationLookup:
             location = Location(locationLookup, self.geo_key)
             logging.info(location)
@@ -106,7 +109,7 @@ class PokeAuthSession(object):
         return None
 
     def createGoogleSession(
-        self, locationLookup=None, session=None, noop=False
+        self, locationLookup=None, session=None, noop=False, coordinates=None
     ):
 
         logging.info('Creating Google session for %s', self.username)
@@ -126,10 +129,11 @@ class PokeAuthSession(object):
             provider='google',
             locationLookup=locationLookup,
             session=session,
-            noop=noop
+            noop=noop,
+            coordinates=coordinates
         )
 
-    def createPTCSession(self, locationLookup=None, session=None, noop=False):
+    def createPTCSession(self, locationLookup=None, session=None, noop=False, coordinates=None):
         instance = self.createRequestsSession()
         logging.info('Creating PTC session for %s', self.username)
         r = instance.get(LOGIN_URL)
@@ -170,16 +174,17 @@ class PokeAuthSession(object):
             provider='ptc',
             locationLookup=locationLookup,
             session=session,
-            noop=noop
+            noop=noop,
+            coordinates=coordinates
         )
 
-    def authenticate(self, locationLookup=None):
+    def authenticate(self, locationLookup=None,coordinates=None):
         """We already have all information, authenticate"""
-        noop = locationLookup is None
+        noop = (locationLookup is None) and (coordinates is None)
         return {
             "google": self.createGoogleSession,
             "ptc": self.createPTCSession
-        }[self.provider](locationLookup=locationLookup, noop=noop)
+        }[self.provider](locationLookup=locationLookup, noop=noop, coordinates = coordinates)
 
     def reauthenticate(self, session):
         """Reauthenticate from an old session"""

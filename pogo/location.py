@@ -6,7 +6,7 @@ import gpxpy.geo
 
 # Wrapper for location
 class Location(object):
-    def __init__(self, locationLookup, geo_key, noop=False):
+    def __init__(self, locationLookup, geo_key, noop=False, coordinates=None):
         # Blank location
         if noop:
             self.noop = True
@@ -23,7 +23,12 @@ class Location(object):
         if geo_key:
             self.locator = GoogleV3(api_key=geo_key)
 
-        self.latitude, self.longitude, self.altitude = self.setLocation(locationLookup)
+        if coordinates != None:
+            self.latitude = coordinates['latitude']
+            self.longitude = coordinates['longitude']
+            self.altitude = coordinates['altitude']
+        elif locationLookup != None:
+            self.latitude, self.longitude, self.altitude = self.setLocation(locationLookup)
 
     def __str__(self):
         s = 'Coordinates: {} {} {}'.format(
